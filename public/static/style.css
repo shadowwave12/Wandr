@@ -83,3 +83,18 @@ footer a:hover {
   background-color: #ff5a5f !important;
   border: none !important;
 }
+
+.show-card {
+  width: 30vh;
+}
+
+.btns {
+  display: flex;
+}
+
+.show-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.7rem;
+}

@@ -4,7 +4,7 @@
   <div class="col-8 offset-2">
   <h3>Edit your Listing</h3>
     <br /> 
-      <form method="POST" action="/listings/<%= listing._id %>?_method=PUT">
+      <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" class="needs-validation" novalidate>
         <div>
           <label for="title" class="form-label">Title</label>
           <input
@@ -13,6 +13,7 @@
             value="<%= listing.title %>"
             type="text"
             class="form-control"
+            required
           />
         </div>
         <div>
@@ -21,6 +22,7 @@
             id="description"
             name="listing[description]"
             class="form-control"
+            required
           >
 <%= listing.description %></textarea
           >
@@ -33,6 +35,7 @@
             value="<%= (() => { try { return JSON.parse(listing.image).url; } catch (e) { return listing.image; } })() %>"
             type="text"
             class="form-control"
+            required
           />
         </div>
         <div class="row">
@@ -44,6 +47,7 @@
               value="<%= listing.price %>"
               type="number"
               class="form-control"
+              required
             />
           </div>
           <div class="mb-3 col-md- 8">
@@ -54,6 +58,7 @@
               value="<%= listing.country %>"
               type="text"
               class="form-control"
+              required
             />
           </div>
           <div>
@@ -64,6 +69,7 @@
               value="<%= listing.location %>"
               type="text"
               class="form-control"
+              required
             />
           </div>
         </div>
@@ -72,4 +78,5 @@
       </form>
     </div>
   </div>
+  <script src="/js/script.js"></script>
 </body>
