@@ -9,6 +9,7 @@ const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
 const Review = require("./models/review.js");
+const { listingSchema, reviewSchema } = require("./schema.js");
 
 main()
   .then(() => {
@@ -34,6 +35,25 @@ app.get("/", (req, res) => {
   res.send("Hi, I am root");
 });
 
+const validateListing = (req, res, next) => {
+  let { error } = listingSchema.validate(req.body);
+  if (error) {
+    let errMsg = error.details.map((el) => el.message).join(",");
+    throw (new ExpressError(), (400, errMsg));
+  } else {
+    next();
+  }
+};
+
+const validateReview = (req, res, next) => {
+  let { error } = reviewSchema.validate(req.body);
+  if (error) {
+    let errMsg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(400, errMsg);
+  } else {
+    next();
+  }
+};
 //Index Route
 app.get(
   "/listings",
@@ -53,7 +73,7 @@ app.get(
   "/listings/:id",
   wrapAsync(async (req, res) => {
     let { id } = req.params;
-    const listing = await Listing.findById(id);
+    const listing = await Listing.findById(id).populate("reviews");
     res.render("listings/show.ejs", { listing });
   })
 );
@@ -61,11 +81,12 @@ app.get(
 //Create Route
 app.post(
   "/listings",
+  validateListing,
   wrapAsync(async (req, res, next) => {
-    // try {
-    if (!req.body.listing) {
-      throw new ExpressError(400, "Send valid data for listing");
-    }
+    // // try {
+    // if (!req.body.listing) {
+    //   throw new ExpressError(400, "Send valid data for listing");
+    // }
     const newListing = new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
@@ -88,6 +109,7 @@ app.get(
 //Update Route
 app.put(
   "/listings/:id",
+  validateListing,
   wrapAsync(async (req, res) => {
     if (!req.body.listing) {
       throw new ExpressError(400, "send valid data for listing");
@@ -108,19 +130,39 @@ app.delete(
     res.redirect("/listings");
   })
 );
+
+//Delete Review route
+app.delete(
+  "/listings/:id/reviews/:reviewId",
+  wrapAsync(async (req, res) => {
+    let { id } = req.params;
+    let { reviewId } = req.params;
+    let reviewRef = await Listing.findByIdAndUpdate(id, {
+      $pull: { reviews: reviewId },
+    });
+    let deletedReview = await Review.findByIdAndDelete(reviewId);
+    console.log("deleted review :", deletedReview);
+    res.redirect(`/listings/${id}`);
+  })
+);
+
 //REVIEW ROUTE
-app.post("/listings/:id/reviews", async (req, res) => {
-  let listing = await Listing.findById(req.params.id);
-  let newReview = new Review(req.body.review);
+app.post(
+  "/listings/:id/reviews",
+  validateReview,
+  wrapAsync(async (req, res) => {
+    let listing = await Listing.findById(req.params.id);
+    let newReview = new Review(req.body.review);
 
-  listing.reviews.push(newReview);
+    listing.reviews.push(newReview);
 
-  await newReview.save();
-  await listing.save();
+    await newReview.save();
+    await listing.save();
 
-  // res.send("new review saved");
-  res.redirect(`/listings/${listing._id}`);
-});
+    // res.send("new review saved");
+    res.redirect(`/listings/${listing._id}`);
+  })
+);
 
 // app.get("/testListing", async (req, res) => {
 //   let sampleListing = new Listing({

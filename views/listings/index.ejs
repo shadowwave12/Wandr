@@ -10,7 +10,7 @@
     JSON.parse(listing.image); } catch (e) { image = { url: listing.image }; }
     %>
     <a href="/listings/<%= listing._id %>" class="text-decoration-none">
-      <div class="card col">
+      <div class="card col listing-card">
         <img
           src="<%= image.url %>"
           class="card-img-top"
