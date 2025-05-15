@@ -10,6 +10,7 @@ const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
 const Review = require("./models/review.js");
 const { listingSchema, reviewSchema } = require("./schema.js");
+const session = require("express-session");
 
 const listing = require("./routes/listing.js");
 const review = require("./routes/review.js");
@@ -33,6 +34,13 @@ app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 //server static files
 app.use(express.static(path.join(__dirname, "public")));
+
+const sessionOptions = {
+  secret: "mysecretCode",
+  resave: false,
+  saveUninitialized: true,
+};
+app.use(session(sessionOptions));
 
 app.get("/", (req, res) => {
   res.send("Hi, I am root");
