@@ -14,6 +14,7 @@ const session = require("express-session");
 
 const listing = require("./routes/listing.js");
 const review = require("./routes/review.js");
+const flash = require("connect-flash");
 
 main()
   .then(() => {
@@ -39,11 +40,19 @@ const sessionOptions = {
   secret: "mysecretCode",
   resave: false,
   saveUninitialized: true,
+  cookie: {
+    expires: Date.now() + 3 * 24 * 60 * 60 * 1000,
+    maxAge: 3 * 24 * 60 * 60 * 1000,
+    httponly: true,
+  },
 };
 app.use(session(sessionOptions));
+app.use(flash());
 
-app.get("/", (req, res) => {
-  res.send("Hi, I am root");
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  next();
 });
 
 app.use("/listings", listing);
@@ -62,7 +71,7 @@ app.use("/listings/:id/reviews", review);
 //   await sampleListing.save();
 //   console.log("sample was saved");
 //   res.send("successful testing");
-// });
+// });*
 
 app.all("*", (req, res) => {
   let nextError = new ExpressError(404, "Page not found!");
