@@ -10,6 +10,7 @@
       alt="listing.title"
     />
     <div class="card-body">
+      <p>Owned By : <%= listing.owner.username %></p>
       <h5 class="card-title"><%= listing.title %></h5>
       <p class="card-text"><%= listing.description %></p>
       <%= listing.location %> | <%= listing.country %>
@@ -18,6 +19,8 @@
       </p>
     </div>
   </div>
+  <% if (currUser && currUser._id.equals(listing.owner._id)) { %>
+
   <div class="btns offset-3 mb-3">
     <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1"
       >Edit</a
@@ -27,7 +30,10 @@
       <button class="btn btn-danger offset-4">Delete</button>
     </form>
   </div>
+  <% } %>
+
   <div class="col-8 offset-3 mb-3 mt-3">
+    <% if(currUser) { %>
     <hr />
     <h4>Leave a Review</h4>
     <form
@@ -62,13 +68,14 @@
     </form>
 
     <hr />
+    <% } %>
 
     <h1>All reviews</h1>
     <div class="row">
       <% for(review of listing.reviews) {%>
       <div class="card col-5 mb-3 ms-3">
         <div class="card-body">
-          <h5 class="card-text">Jane Doe</h5>
+          <h5 class="card-text">@<%=review.author.username %></h5>
           <p class="card-text"><%= review.comment %></p>
           <p class="card-text"><%= review.rating %> stars</p>
         </div>
