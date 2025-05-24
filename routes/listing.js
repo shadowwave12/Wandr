@@ -8,36 +8,33 @@ const passport = require("passport");
 const { isloggedIn, isOwner, validateListing } = require("../middleware.js");
 const { equal } = require("joi");
 const listingController = require("../controllers/listing");
+const multer = require("multer");
+const { storage } = require("../cloudConfig");
+const upload = multer({ storage });
 
-router.get("/", wrapAsync(listingController.index));
+router
+  .route("/")
+  .get(wrapAsync(listingController.index))
+  // .post(isloggedIn, validateListing, wrapAsync(listingController.create));
+  .post(upload.single("listing[image]"), (req, res) => {
+    res.send(req.file);
+  });
 
 //New Route
 router.get("/new", isloggedIn, listingController.newRoute);
 
-//Show Route
-router.get("/:id", wrapAsync(listingController.showRoute));
-
-//Create Route
-router.post(
-  "/",
-  isloggedIn,
-  validateListing,
-  wrapAsync(listingController.create)
-);
+router
+  .route("/:id")
+  .get(wrapAsync(listingController.showRoute))
+  .put(
+    isloggedIn,
+    isOwner,
+    validateListing,
+    wrapAsync(listingController.update)
+  )
+  .delete(isloggedIn, isOwner, wrapAsync(listingController.delete));
 
 //Edit Route
 router.get("/:id/edit", isloggedIn, isOwner, wrapAsync(listingController.edit));
-
-//Update Route
-router.put(
-  "/:id",
-  isloggedIn,
-  isOwner,
-  validateListing,
-  wrapAsync(listingController.update)
-);
-
-//Delete Route
-router.delete("/:id", isloggedIn, isOwner, wrapAsync(listingController.delete));
 
 module.exports = router;
