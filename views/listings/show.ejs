@@ -5,7 +5,7 @@
   </div>
   <div class="card listing-card col-6 offset-3 show-card" style="width: 18rem">
     <img
-      src="<%= (() => { try { return JSON.parse(listing.image).url; } catch (e) { return listing.image; } })() %>"
+      src="<%= (() => { try { return JSON.parse(listing.image.url).url; } catch (e) { return listing.image.url; } })() %>"
       class="card-img-top show-img"
       alt="listing.title"
     />

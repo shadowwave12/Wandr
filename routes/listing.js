@@ -12,13 +12,13 @@ const multer = require("multer");
 const { storage } = require("../cloudConfig");
 const upload = multer({ storage });
 
-router
-  .route("/")
-  .get(wrapAsync(listingController.index))
-  // .post(isloggedIn, validateListing, wrapAsync(listingController.create));
-  .post(upload.single("listing[image]"), (req, res) => {
-    res.send(req.file);
-  });
+router.route("/").get(wrapAsync(listingController.index)).post(
+  isloggedIn,
+
+  upload.single("listing[image]"),
+  validateListing,
+  wrapAsync(listingController.create)
+);
 
 //New Route
 router.get("/new", isloggedIn, listingController.newRoute);
@@ -29,6 +29,7 @@ router
   .put(
     isloggedIn,
     isOwner,
+    upload.single("listing[image]"),
     validateListing,
     wrapAsync(listingController.update)
   )
