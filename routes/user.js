@@ -6,6 +6,8 @@ const passport = require("passport");
 const { saveRedirectUrl } = require("../middleware");
 const userController = require("../controllers/user");
 
+// router.route("/").post("/listings");
+
 router
   .route("/signup")
   .get(userController.signupForm)
@@ -20,7 +22,7 @@ router
       failureRedirect: "/login",
       failureFlash: true,
     }),
-    userController.postLoginForm
+    userController.postLoginForm,
   );
 
 router.get("/logout", userController.logout);

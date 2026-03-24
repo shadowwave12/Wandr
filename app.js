@@ -78,6 +78,29 @@ app.get("/demoUser", async (req, res) => {
   res.send(newUser);
 });
 
+app.get(
+  "/",
+  wrapAsync(async (req, res) => {
+    const featuredListings = await Listing.find().limit(6).lean();
+    const trendingCities = await Listing.aggregate([
+      {
+        $group: {
+          _id: "$location",
+          count: { $sum: 1 },
+          hero: { $first: "$image" },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 4 },
+    ]);
+    res.render("listings/home", {
+      featuredListings,
+      trendingCities,
+      stats: { nightsBooked: 1280, hosts: 320, countries: 42 },
+    });
+  }),
+);
+
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
