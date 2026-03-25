@@ -21,7 +21,7 @@ const userRouter = require("./routes/user.js");
 const flash = require("connect-flash");
 const passport = require("passport");
 const User = require("./models/user.js");
-const LocalStrategy = require("passport-local").Strategy; // <-- FIXED LINE
+const LocalStrategy = require("passport-local").Strategy;
 
 main()
   .then(() => {

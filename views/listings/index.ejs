@@ -1,11 +1,14 @@
 <% layout('layouts/boilerplate') %>
 <body>
-  <h3>All Listings</h3>
-  <!-- <form method="GET" action="/listings/new">
-      <button>Create New Listing</button>
-    </form> -->
-
-  <div class="row row-cols-md-2 row-cols-sm-1 row-cols-lg-3">
+  <section class="listings-collection">
+    <div class="listings-collection__header">
+      <div>
+        <p class="eyebrow">Curated stays</p>
+        <h3>All Listings</h3>
+      </div>
+      <span class="collection-count"><%= allListings.length %> stays</span>
+    </div>
+    <div class="row row-cols-md-2 row-cols-sm-1 row-cols-lg-3 g-4">
     <% for(let listing of allListings) { let image; try { image =
     JSON.parse(listing.image); } catch (e) { image = { url: listing.image }; }
     %>
@@ -27,5 +30,6 @@
     </a>
 
     <% } %>
-  </div>
+    </div>
+  </section>
 </body>
