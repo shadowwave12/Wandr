@@ -1,0 +1,64 @@
+<% layout('layouts/boilerplate') %>
+<section class="home-hero rounded-4 overflow-hidden">
+  <div class="home-hero__media">
+    <img src="/static/images/hero.jpg" alt="sunset over mountains" />
+    <div class="home-hero__badge">Plan your next escape</div>
+  </div>
+  <div class="home-hero__copy">
+    <p class="eyebrow">Handpicked stays worldwide</p>
+    <h1>Stay curious. Stay Wanderlust.</h1>
+    <p>Discover remote cabins, beach villas, and design-forward city lofts curated for every mood.</p>
+    <div class="hero-actions">
+      <a href="/listings" class="btn btn-dark btn-lg">Browse Stays</a>
+      <a href="/listings/new" class="btn btn-outline-light btn-lg">Become a Host</a>
+    </div>
+    <div class="hero-stats">
+      <div><span><%= stats.nightsBooked %>+</span>Nights booked</div>
+      <div><span><%= stats.hosts %>+</span>Trusted hosts</div>
+      <div><span><%= stats.countries %>+</span>Countries</div>
+    </div>
+  </div>
+</section>
+
+<section class="home-grid">
+  <header>
+    <p class="eyebrow">Editor’s picks</p>
+    <h2>Featured listings</h2>
+  </header>
+  <div class="grid-cards">
+    <% featuredListings.forEach(listing => { %>
+      <a href="/listings/<%= listing._id %>" class="grid-card">
+        <img src="<%= listing.image.url %>" alt="<%= listing.title %>" />
+        <div>
+          <h3><%= listing.title %></h3>
+          <p><%= listing.location %> · ₹<%= listing.price %>/night</p>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+</section>
+
+<section class="home-categories">
+  <header>
+    <p class="eyebrow">Where to next?</p>
+    <h2>Trending destinations</h2>
+  </header>
+  <div class="category-pills">
+    <% trendingCities.forEach(city => { %>
+      <a class="pill" href="/listings?location=<%= city._id %>">
+        <img src="<%= city.hero.url %>" alt="<%= city._id %>" />
+        <span><%= city._id %></span>
+        <small><%= city.count %> stays</small>
+      </a>
+    <% }) %>
+  </div>
+</section>
+
+<section class="home-cta">
+  <div>
+    <p class="eyebrow">Host with Wanderlust</p>
+    <h2>Share your space with mindful travelers.</h2>
+    <p>Earn more from unused rooms or second homes. We handle visibility, you keep the vibe.</p>
+  </div>
+  <a href="/listings/new" class="btn btn-light btn-lg">List your place</a>
+</section>
