@@ -1,3 +1,6 @@
+if (process.env.NODE_ENV != "production") {
+  require("dotenv").config();
+}
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -8,6 +11,17 @@ const ejsMate = require("ejs-mate");
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
+const Review = require("./models/review.js");
+const { listingSchema, reviewSchema } = require("./schema.js");
+const session = require("express-session");
+
+const listingRouter = require("./routes/listing.js");
+const reviewRouter = require("./routes/review.js");
+const userRouter = require("./routes/user.js");
+const flash = require("connect-flash");
+const passport = require("passport");
+const User = require("./models/user.js");
+const LocalStrategy = require("passport-local").Strategy;
 
 main()
   .then(() => {
@@ -29,84 +43,68 @@ app.engine("ejs", ejsMate);
 //server static files
 app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/", (req, res) => {
-  res.send("Hi, I am root");
+const sessionOptions = {
+  secret: "mysecretCode",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    expires: Date.now() + 3 * 24 * 60 * 60 * 1000,
+    maxAge: 3 * 24 * 60 * 60 * 1000,
+    httponly: true,
+  },
+};
+app.use(session(sessionOptions));
+app.use(flash());
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  res.locals.currUser = req.user;
+  next();
 });
 
+app.get("/demoUser", async (req, res) => {
+  let fakeUser = new User({
+    email: "cust@gmail.com",
+    username: "delta2",
+  });
+  let newUser = await User.register(fakeUser, "cust123");
+  res.send(newUser);
+});
+
+app.get(
+  "/",
+  wrapAsync(async (req, res) => {
+    const featuredListings = await Listing.find().limit(6).lean();
+    const trendingCities = await Listing.aggregate([
+      {
+        $group: {
+          _id: "$location",
+          count: { $sum: 1 },
+          hero: { $first: "$image" },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 4 },
+    ]);
+    res.render("listings/home", {
+      featuredListings,
+      trendingCities,
+      stats: { nightsBooked: 1280, hosts: 320, countries: 42 },
+    });
+  }),
+);
+
+app.use("/listings", listingRouter);
+app.use("/listings/:id/reviews", reviewRouter);
+app.use("/", userRouter);
 //Index Route
-app.get(
-  "/listings",
-  wrapAsync(async (req, res) => {
-    const allListings = await Listing.find({});
-    res.render("listings/index.ejs", { allListings });
-  })
-);
-
-//New Route
-app.get("/listings/new", (req, res) => {
-  res.render("listings/new.ejs");
-});
-
-//Show Route
-app.get(
-  "/listings/:id",
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    res.render("listings/show.ejs", { listing });
-  })
-);
-
-//Create Route
-app.post(
-  "/listings",
-  wrapAsync(async (req, res, next) => {
-    // try {
-    if (!req.body.listing) {
-      throw new ExpressError(400, "Send valid data for listing");
-    }
-    const newListing = new Listing(req.body.listing);
-    await newListing.save();
-    res.redirect("/listings");
-    // } catch (err) {
-    //   next(err);
-    // }
-  })
-);
-
-//Edit Route
-app.get(
-  "/listings/:id/edit",
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    res.render("listings/edit.ejs", { listing });
-  })
-);
-
-//Update Route
-app.put(
-  "/listings/:id",
-  wrapAsync(async (req, res) => {
-    if (!req.body.listing) {
-      throw new ExpressError(400, "send valid data for listing");
-    }
-    let { id } = req.params;
-    await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-    res.redirect(`/listings/${id}`);
-  })
-);
-
-//Delete Route
-app.delete(
-  "/listings/:id",
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    let deletedListing = await Listing.findByIdAndDelete(id);
-    console.log(deletedListing);
-    res.redirect("/listings");
-  })
-);
 
 // app.get("/testListing", async (req, res) => {
 //   let sampleListing = new Listing({
@@ -120,7 +118,7 @@ app.delete(
 //   await sampleListing.save();
 //   console.log("sample was saved");
 //   res.send("successful testing");
-// });
+// });*
 
 app.all("*", (req, res) => {
   let nextError = new ExpressError(404, "Page not found!");

@@ -4,7 +4,7 @@
   <div class="col-8 offset-2">
   <h3>Edit your Listing</h3>
     <br /> 
-      <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" class="needs-validation" novalidate>
+      <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" class="needs-validation" novalidate enctype="multipart/form-data">
         <div>
           <label for="title" class="form-label">Title</label>
           <input
@@ -27,15 +27,16 @@
 <%= listing.description %></textarea
           >
         </div>
+        <div class="mb-3">
+          Original Image <br/>
+          <img src="<%= originalImageUrl %>" /></div>
         <div>
-          <label for="image" class="form-label">Image</label>
+          <label for="image" class="form-label">upload Image</label>
           <input
             id="image"
             name="listing[image]"
-            value="<%= (() => { try { return JSON.parse(listing.image).url; } catch (e) { return listing.image; } })() %>"
-            type="text"
+            type="file"
             class="form-control"
-            required
           />
         </div>
         <div class="row">
